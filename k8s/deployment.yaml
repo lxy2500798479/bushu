@@ -18,9 +18,9 @@ spec:
     spec:
       containers:
         - name: seckill-api
-          # 替换为你的镜像地址
-          image: your-registry/seckill-api:latest
-          imagePullPolicy: Always
+          # minikube 本地镜像
+          image: seckill-api:latest
+          imagePullPolicy: Never  # 使用本地镜像，不从远程拉取
           ports:
             - containerPort: 3000
               name: http

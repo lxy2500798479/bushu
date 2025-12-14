@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 秒杀活动表
+model Activity {
+  id          String         @id @default(uuid())
+  name        String
+  productName String
+  price       Decimal        @db.Decimal(10, 2)
+  stock       Int
+  startTime   DateTime
+  endTime     DateTime
+  status      ActivityStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  orders      Order[]
+
+  @@map("activities")
+}
+
+// 秒杀订单表
+model Order {
+  id         String      @id @default(uuid())
+  activityId String
+  userId     String
+  status     OrderStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  activity   Activity    @relation(fields: [activityId], references: [id])
+
+  @@unique([activityId, userId])
+  @@map("orders")
+}
+
+enum ActivityStatus {
+  PENDING
+  ACTIVE
+  ENDED
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}

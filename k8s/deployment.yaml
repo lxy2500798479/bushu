@@ -1,0 +1,60 @@
+# 秒杀系统 API 部署
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seckill-api
+  namespace: seckill
+  labels:
+    app: seckill-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: seckill-api
+  template:
+    metadata:
+      labels:
+        app: seckill-api
+    spec:
+      containers:
+        - name: seckill-api
+          # 替换为你的镜像地址
+          image: your-registry/seckill-api:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+              name: http
+          # 环境变量 - 从 ConfigMap 读取
+          envFrom:
+            - configMapRef:
+                name: seckill-config
+            - secretRef:
+                name: seckill-secret
+          # 资源限制
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          # 健康检查
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+      # 如果使用私有镜像仓库，需要配置 imagePullSecrets
+      # imagePullSecrets:
+      #   - name: registry-secret
